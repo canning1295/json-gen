@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 import { getStorage, ref, deleteObject,uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -107,3 +107,29 @@ export async function updateDeckName(uuid, newDeckName) {
     }
 }
 
+export async function writeToAnkiSettings(text) {
+    try {
+        const docRef = doc(db, "Anki-Settings", "instructions");
+        await setDoc(docRef, { text: text });
+        console.log("Document written successfully");
+    } catch (error) {
+        console.error("Error writing document: ", error);
+    }
+}
+
+export async function getTextFromAnkiSettings() {
+    try {
+        const docRef = doc(db, "Anki-Settings", "instructions");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data().text;
+        } else {
+            console.log("No such document!");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error getting document: ", error);
+        return null;
+    }
+}

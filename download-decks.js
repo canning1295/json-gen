@@ -4,31 +4,43 @@ import { landing } from "./landing.js";
 export function downloadDecks() {
     const newBody = document.body.cloneNode(false);
     document.body.parentNode.replaceChild(newBody, document.body);
-	const ankiDecksPage = `
+    const ankiDecksPage = `
         <div class="container text-center mt-3">
-            <h1>Download Anki Decks</h1>
+            <h1>
+                <i id="refreshDecksIcon" class="bi bi-arrow-clockwise me-2"></i>
+                Download Decks
+            </h1>
             <button id="closeButton" class="btn-close position-fixed top-0 end-0 m-3" aria-label="Close"></button>
             <table class="table mt-4" id="ankiDecksTable">
-            <thead>
-                <tr>
-                <th scope="col">Deck</th>
-                <th scope="col">Author</th>
-                <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Decks will be populated here -->
-            </tbody>
+                <thead>
+                    <tr>
+                        <th scope="col">Deck</th>
+                        <th scope="col">Author</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Decks will be populated here -->
+                </tbody>
             </table>
         </div>
     `;
 
-	// Inject this into your HTML
-	document.body.innerHTML = ankiDecksPage;
+    document.body.innerHTML = ankiDecksPage;
+
+    document.getElementById('refreshDecksIcon').addEventListener('click', async () => {
+        await redrawTable();
+    });
 
     document.getElementById('closeButton').addEventListener('click', function() {
         landing();
     });
+
+    async function redrawTable() {
+        const table = $('#ankiDecksTable').DataTable();
+        table.clear().destroy(); // Clear the existing table and destroy the DataTable object
+        await populateAnkiDecksTable(); // Repopulate the table
+    }
 
 	async function populateAnkiDecksTable() {
 		const tbody = document
