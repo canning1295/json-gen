@@ -29,6 +29,7 @@ export function createButton(id, classes, text, color, width, importFunction) {
     button.style.backgroundColor = '#6cc7a5'; 
     button.style.marginBottom = '20px';
     button.style.width = width;
+    button.style.color = 'black';
     button.addEventListener('click', function() {
         importFunction();
     });

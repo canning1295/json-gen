@@ -35,7 +35,6 @@ export async function uploadAnkiDeck(deckName, user, file) {
 }
 
 export async function downloadAnkiFile(uuid, deckName) {
-    console.log('Deck name:', deckName);
     try {
         const fileRef = ref(storage, `anki_files/${uuid}`);
         const fileUrl = await getDownloadURL(fileRef);
@@ -57,8 +56,6 @@ export async function downloadAnkiFile(uuid, deckName) {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-
-        console.log("Download started for:", uuid);
     } catch (error) {
         console.error("Error downloading Anki file:", error);
         throw error;
@@ -82,11 +79,7 @@ export async function downloadAllAnkiDecks() {
 }
 
 export async function deleteAnkiDeckAndFile(uuid) {
-    console.log("Deleting Anki deck and file for UUID:", uuid);
     try {
-        console.log("Firestore DB Reference:", db);
-        console.log("Firebase Storage Reference:", storage);
-
         // Delete the deck document from Firestore
         await deleteDoc(doc(db, "Anki-Decks", uuid));
 

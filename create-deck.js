@@ -1,7 +1,11 @@
 import { landing } from "./landing.js";
 import { uploadAnkiDeck } from "./firebaseDB.js";
+import { showLoadingAnimation } from "./loadingAnimation.js";
+import { downloadDecks } from "./download-decks.js";
 
 export async function createDeckForm() {
+	const newBody = document.body.cloneNode(false);
+    document.body.parentNode.replaceChild(newBody, document.body);
 	const createDeckPage = `
   <div class="container text-center mt-3">
     <h1>Create Deck</h1>
@@ -24,6 +28,7 @@ export async function createDeckForm() {
 
 	async function sendDeckToAwsAndUpload(deck) {
 		try {
+			showLoadingAnimation();
 			// Step 1: Send the deck JSON to AWS API
 			const response = await fetch(
 				"https://j4our5myah.execute-api.us-east-2.amazonaws.com/generate-apkg",
@@ -57,8 +62,7 @@ export async function createDeckForm() {
 			// Step 4: Call uploadAnkiDeck function
 			deck = JSON.parse(deck);
 			await uploadAnkiDeck(deck.deck_name, user, file);
-
-			console.log(`Deck uploaded successfully: ${deck.deck_name}`);
+			downloadDecks();
 		} catch (error) {
 			console.error("Error in sending deck to AWS and uploading:", error);
 			throw error;

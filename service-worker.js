@@ -1,9 +1,9 @@
 const filesToCache = [
 
-//   "/firebaseDB.js",
-//   "/index.html",
-//    "/options.js",
-//   "/landing.js",
+  "/firebaseDB.js",
+  "/index.html",
+   "/options.js",
+  "/landing.js",
 //   "/libraries/bootstrap.min.css",
 //   "/libraries/bootstrap-icons.css",
 //   "/libraries/bootstrap.bundle.min.js",

@@ -2,6 +2,8 @@ import { downloadAllAnkiDecks, downloadAnkiFile, deleteAnkiDeckAndFile } from ".
 import { landing } from "./landing.js";
 
 export function downloadDecks() {
+    const newBody = document.body.cloneNode(false);
+    document.body.parentNode.replaceChild(newBody, document.body);
 	const ankiDecksPage = `
         <div class="container text-center mt-3">
             <h1>Download Anki Decks</h1>
@@ -33,7 +35,6 @@ export function downloadDecks() {
 			.getElementById("ankiDecksTable")
 			.getElementsByTagName("tbody")[0];
 		const decks = await downloadAllAnkiDecks();
-        console.log(decks);
 
 		decks.forEach((deck) => {
 			const row = tbody.insertRow();
@@ -65,7 +66,6 @@ export function downloadDecks() {
                 try {
                     // Pass both UUID and deck name to the download function
                     await downloadAnkiFile(uuid, deckName);
-                    console.log("Download initiated for UUID:", uuid, "Deck Name:", deckName);
                 } catch (error) {
                     console.error("Error downloading Anki file:", error);
                 }
@@ -74,9 +74,8 @@ export function downloadDecks() {
 
 		// Attach delete event listeners
         document.querySelectorAll(".deck-delete").forEach((element) => {
-            element.addEventListener("click", (event) => {
+            element.addEventListener("click", async (event) => {
                 event.preventDefault();
-                // Use `closest` to ensure we get the element with `data-id`
                 const anchorElement = event.target.closest('.deck-delete');
                 const uuid = anchorElement.getAttribute("data-id");
     
@@ -85,11 +84,23 @@ export function downloadDecks() {
                         "Are you sure you want to delete this deck? It will not be recoverable."
                     )
                 ) {
-                    deleteAnkiDeckAndFile(uuid);
+                    try {
+                        await deleteAnkiDeckAndFile(uuid);
+                        // Redraw the table
+                        redrawTable();
+                    } catch (error) {
+                        console.error("Error deleting deck:", error);
+                    }
                 }
             });
         });
 	}
+
+    async function redrawTable() {
+        const table = $('#ankiDecksTable').DataTable();
+        table.clear().destroy(); // Clear the existing table and destroy the DataTable object
+        await populateAnkiDecksTable(); // Repopulate the table
+    }
 
 	function initializeDataTable() {
 		$("#ankiDecksTable").DataTable({
