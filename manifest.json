@@ -1,0 +1,35 @@
+{
+  "short_name": "Flashy",
+  "name": "Anki Deck Builder",
+  "icons": [
+      {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+      },
+      {
+          "src": "/icons/icon-512x512.png",
+          "sizes": "512x512",
+          "type": "image/png"
+      },
+      {
+          "src": "/icons/apple-touch-icon.png",
+          "sizes": "180x180",
+          "type": "image/png",
+          "purpose": "any maskable"
+      }
+  ],
+  "start_url": "/index.html",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#212529",
+  "orientation": "portrait",
+  "description": "Create apkg files for Anki",
+  "lang": "en",
+  "categories": ["education", "language", "learning"],
+  "screenshots": [
+  ]
+}
+
+  
