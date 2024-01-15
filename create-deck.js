@@ -112,7 +112,7 @@ export async function createDeckForm(originalPrompt) {
 			if (retry) {
 				return sendPromptToChatGPT(prompt);
 			} else {
-				createDeckForm(prompt);
+				createDeckForm(originalPrompt);
 			}
 		}
 	}
@@ -161,7 +161,7 @@ export async function createDeckForm(originalPrompt) {
 			if (retry) {
 				return sendDeckToAwsAndUpload(deckJson);
 			} else {
-				createDeckForm(prompt);
+				createDeckForm(originalPrompt);
 			}
 		}
 	}	
