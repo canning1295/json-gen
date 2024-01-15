@@ -5,7 +5,8 @@ import { downloadDecks } from "./download-decks.js";
 import { instructions } from "./instructions.js";
 import { options } from "./options.js";
 
-export async function createDeckForm() {
+let originalPrompt;
+export async function createDeckForm(originalPrompt) {
 	let key = localStorage.getItem("apiKey");
 	if (!key) {console.log('no key');options(); return;}
     const newBody = document.body.cloneNode(false);
@@ -40,7 +41,9 @@ export async function createDeckForm() {
     `;
 
     document.body.innerHTML = createDeckPage;
-
+	if (originalPrompt){
+		document.getElementById("deckInput").value = originalPrompt;
+	}
     // Add event listeners
     document.getElementById("cancelButton").addEventListener("click", landing);
 	document.getElementById("saveInstructions").addEventListener("click", async function(event) {
@@ -60,6 +63,7 @@ export async function createDeckForm() {
 
     document.getElementById("generateButton").addEventListener("click", async () => {
         showLoadingAnimation();
+		originalPrompt = document.getElementById("deckInput").value;
         const prompt = instructions + document.getElementById("deckInput").value;
         const deckJson = await sendPromptToChatGPT(prompt);
         sendDeckToAwsAndUpload(JSON.stringify(deckJson));
@@ -93,16 +97,28 @@ export async function createDeckForm() {
 			});
 	
 			let data = await response.json();
-			console.log('response from ChatGPT:', data);
-			data = JSON.parse(data.choices[0].message.content)
-			console.log('data:', data)
+			console.log('Entire response:', data);
+	
+			// Remove Markdown code block formatting if present
+			let chatResponse = data.choices[0].message.content;
+			chatResponse = chatResponse.replace(/^```json\n([\s\S]*?)\n```$/, '$1').trim();
+			// Parse the cleaned response
+			data = JSON.parse(chatResponse);
+			console.log('response from ChatGPT (what is being sent to AWS):', data);
 			return data;
 		} catch (error) {
 			console.error('Error:', error);
+			const retry = confirm("Error generating deck. ChatGPT did not return a valid response. Would you like to try again?");
+			if (retry) {
+				return sendPromptToChatGPT(prompt);
+			} else {
+				createDeckForm(prompt);
+			}
 		}
 	}
+	
 
-	async function sendDeckToAwsAndUpload(deck) {
+	async function sendDeckToAwsAndUpload(deckJson) {
 		try {
 			// Step 1: Send the deck JSON to AWS API
 			const response = await fetch(
@@ -112,7 +128,7 @@ export async function createDeckForm() {
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: deck,
+					body: deckJson,
 				}
 			);
 	
@@ -124,7 +140,7 @@ export async function createDeckForm() {
 	
 			// Step 2: Receive the .apkg file in the response
 			const blob = await response.blob();
-			const file = new File([blob], `${JSON.parse(deck).deck_name}.apkg`, {
+			const file = new File([blob], `${JSON.parse(deckJson).deck_name}.apkg`, {
 				type: "application/octet-stream",
 			});
 	
@@ -135,12 +151,18 @@ export async function createDeckForm() {
 			}
 	
 			// Step 4: Call uploadAnkiDeck function
-			deck = JSON.parse(deck);
+			const deck = JSON.parse(deckJson);
 			await uploadAnkiDeck(deck.deck_name, user, file);
-			downloadDecks();
+			downloadDecks(deck.deck_name);
+	
 		} catch (error) {
-			console.error("Error in sending deck to AWS and uploading:", error);
-			throw error;
+			console.error("Error in sending deck to AWS and/or uploading to the database:", error);
+			const retry = confirm("Error in sending deck to AWS and/or uploading to the database. Would you like to try again?", error);
+			if (retry) {
+				return sendDeckToAwsAndUpload(deckJson);
+			} else {
+				createDeckForm(prompt);
+			}
 		}
-	}
+	}	
 }	

@@ -1,7 +1,7 @@
 import { downloadAllAnkiDecks, downloadAnkiFile, deleteAnkiDeckAndFile } from "./firebaseDB.js";
 import { landing } from "./landing.js";
 
-export function downloadDecks() {
+export function downloadDecks(deckName) {
     const newBody = document.body.cloneNode(false);
     document.body.parentNode.replaceChild(newBody, document.body);
     const ankiDecksPage = `
@@ -46,7 +46,7 @@ export function downloadDecks() {
 		const tbody = document
 			.getElementById("ankiDecksTable")
 			.getElementsByTagName("tbody")[0];
-		const decks = await downloadAllAnkiDecks();
+		let decks = await downloadAllAnkiDecks();
 
 		decks.forEach((deck) => {
 			const row = tbody.insertRow();
@@ -62,6 +62,7 @@ export function downloadDecks() {
 
 		attachEventListeners();
 		initializeDataTable();
+
 	}
 
 	populateAnkiDecksTable();
@@ -113,14 +114,19 @@ export function downloadDecks() {
         table.clear().destroy(); // Clear the existing table and destroy the DataTable object
         await populateAnkiDecksTable(); // Repopulate the table
     }
-
-	function initializeDataTable() {
-		$("#ankiDecksTable").DataTable({
-			paging: false, // Disable pagination
-			info: false, // Hide the information underneath the table
-			scrollY: "200px", // Set the vertical scroll
-			scrollCollapse: true,
-			responsive: true, // Enable responsiveness
-		});
-	}
+    function initializeDataTable(deckName) {
+        // Store the DataTable instance in a variable
+        const dataTable = $("#ankiDecksTable").DataTable({
+            paging: false, // Disable pagination
+            info: false, // Hide the information underneath the table
+            scrollY: '90%', // Set the vertical scroll
+            scrollCollapse: true,
+            responsive: true, // Enable responsiveness
+        });
+        // If deckName is provided, set it in the search field and trigger the search
+        if (deckName) {
+            dataTable.search(deckName).draw();
+        }
+    }
+    
 }
