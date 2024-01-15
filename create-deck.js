@@ -3,8 +3,11 @@ import { uploadAnkiDeck, getTextFromAnkiSettings, writeToAnkiSettings } from "./
 import { showLoadingAnimation } from "./loadingAnimation.js";
 import { downloadDecks } from "./download-decks.js";
 import { instructions } from "./instructions.js";
+import { options } from "./options.js";
 
 export async function createDeckForm() {
+	let key = localStorage.getItem("apiKey");
+	if (!key) {console.log('no key');options(); return;}
     const newBody = document.body.cloneNode(false);
     document.body.parentNode.replaceChild(newBody, document.body);
     const createDeckPage = `
@@ -58,26 +61,46 @@ export async function createDeckForm() {
     document.getElementById("generateButton").addEventListener("click", async () => {
         showLoadingAnimation();
         const prompt = instructions + document.getElementById("deckInput").value;
-        const deckJson = await callChatGPTFunction(prompt);
+        const deckJson = await sendPromptToChatGPT(prompt);
         sendDeckToAwsAndUpload(JSON.stringify(deckJson));
     });
 
-	async function callChatGPTFunction(prompt) {
+	async function sendPromptToChatGPT(prompt) {
+		const apiKey = key;
+		const url = 'https://api.openai.com/v1/chat/completions';
+	
+		const headers = {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${apiKey}`
+		};
+	
+		const body = JSON.stringify({
+			model: "gpt-4-1106-preview",
+			messages: [
+				{
+					role: "user",
+					content: prompt
+				}
+			],
+			max_tokens: 4096
+		});
+	
 		try {
-			const response = await fetch('/.netlify/functions', {
+			const response = await fetch(url, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ prompt })
+				headers: headers,
+				body: body
 			});
 	
-			const data = await response.json();
+			let data = await response.json();
+			console.log('response from ChatGPT:', data);
+			data = JSON.parse(data.choices[0].message.content)
+			console.log('data:', data)
 			return data;
 		} catch (error) {
-			console.error("Error in function call:", error);
+			console.error('Error:', error);
 		}
-	}	
+	}
 
 	async function sendDeckToAwsAndUpload(deck) {
 		try {

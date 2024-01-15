@@ -4,6 +4,7 @@ export function options() {
     // Retrieve the current user and newCardsLeft from local storage
     const user = localStorage.getItem('user') || '';
     const isAuthenticated = localStorage.getItem('auth') === 'true';
+    let apiKey = localStorage.getItem('apiKey') || '';
 
     document.body.innerHTML = /*html*/`
         <div class="container mt-5">
@@ -36,6 +37,16 @@ export function options() {
                                         </div>
                                     </div>
                                 </div>
+                                <div class="mb-3 row">
+                                    <label for="apiKey" class="col-sm-4 col-form-label">API Key:</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="apiKey" value="${apiKey}" required>
+                                        <div class="invalid-feedback">
+                                            Please enter your API key.
+                                        </div>
+                                    </div>
+                                </div>
+                            <div class="d-flex justify-content-end">
                                 <div class="d-flex justify-content-end">
                                     <button type="button" id="cancelButton" class="btn btn-secondary me-2">Cancel</button>
                                     <button type="submit" id="saveButton" class="btn btn-primary">Save</button>
@@ -69,8 +80,10 @@ function saveFlashyOptions() {
     const form = document.getElementById('optionsForm');
     if (form.checkValidity()) {
         const user = document.getElementById('user').value;
+        let apiKey = document.getElementById('apiKey').value; // Get the API key from the form
 
         localStorage.setItem('user', user);
+        localStorage.setItem('apiKey', apiKey); 
 
         landing();
     }
