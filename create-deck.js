@@ -58,46 +58,26 @@ export async function createDeckForm() {
     document.getElementById("generateButton").addEventListener("click", async () => {
         showLoadingAnimation();
         const prompt = instructions + document.getElementById("deckInput").value;
-        const deckJson = await sendPromptToChatGPT(prompt);
+        const deckJson = await callChatGPTFunction(prompt);
         sendDeckToAwsAndUpload(JSON.stringify(deckJson));
     });
 
-	async function sendPromptToChatGPT(prompt) {
-		const apiKey = process.env.gpt_key;
-		const url = 'https://api.openai.com/v1/chat/completions';
-	
-		const headers = {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${apiKey}`
-		};
-	
-		const body = JSON.stringify({
-			model: "gpt-4-1106-preview",
-			messages: [
-				{
-					role: "user",
-					content: prompt
-				}
-			],
-			max_tokens: 4096
-		});
-	
+	async function callChatGPTFunction(prompt) {
 		try {
-			const response = await fetch(url, {
+			const response = await fetch('/.netlify/functions', {
 				method: 'POST',
-				headers: headers,
-				body: body
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ prompt })
 			});
 	
-			let data = await response.json();
-			console.log('response from ChatGPT:', data);
-			data = JSON.parse(data.choices[0].message.content)
-			console.log('data:', data)
+			const data = await response.json();
 			return data;
 		} catch (error) {
-			console.error('Error:', error);
+			console.error("Error in function call:", error);
 		}
-	}
+	}	
 
 	async function sendDeckToAwsAndUpload(deck) {
 		try {
