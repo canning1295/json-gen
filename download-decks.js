@@ -1,7 +1,8 @@
 import { downloadAllAnkiDecks, downloadAnkiFile, deleteAnkiDeckAndFile } from "./firebaseDB.js";
 import { landing } from "./landing.js";
 
-export function downloadDecks(deckName) {
+export function downloadDecks(deckId) {
+    console.log('search for deck name', deckId)
     const newBody = document.body.cloneNode(false);
     document.body.parentNode.replaceChild(newBody, document.body);
     const ankiDecksPage = `
@@ -114,7 +115,7 @@ export function downloadDecks(deckName) {
         table.clear().destroy(); // Clear the existing table and destroy the DataTable object
         await populateAnkiDecksTable(); // Repopulate the table
     }
-    function initializeDataTable(deckName) {
+    function initializeDataTable() {
         // Store the DataTable instance in a variable
         const dataTable = $("#ankiDecksTable").DataTable({
             paging: false, // Disable pagination
@@ -124,8 +125,8 @@ export function downloadDecks(deckName) {
             responsive: true, // Enable responsiveness
         });
         // If deckName is provided, set it in the search field and trigger the search
-        if (deckName) {
-            dataTable.search(deckName).draw();
+        if (deckId) {
+            dataTable.search(deckId).draw();
         }
     }
     
